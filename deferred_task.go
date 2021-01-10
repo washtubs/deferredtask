@@ -8,9 +8,26 @@ import (
 	"github.com/pkg/errors"
 )
 
+type deferrableTaskService struct{}
+
+var defaultService = &deferrableTaskService{}
+
 type DeferrableTask struct {
 	Description string `json:description`
 	Cmd         string `json:cmd`
+}
+
+func DoTask(index int) error {
+	return defaultService.DoTask(index)
+}
+func DismissTask(index int) error {
+	return defaultService.DismissTask(index)
+}
+func ListTasks() ([]DeferrableTask, error) {
+	return defaultService.ListTasks()
+}
+func AddTask(task DeferrableTask) error {
+	return defaultService.AddTask(task)
 }
 
 type DeferrableTaskService interface {
@@ -23,8 +40,6 @@ type DeferrableTaskService interface {
 func GetDeferrableService() DeferrableTaskService {
 	return &deferrableTaskService{}
 }
-
-type deferrableTaskService struct{}
 
 func (svc *deferrableTaskService) getFileName() string {
 	return os.ExpandEnv("$HOME/.deferred-tasks")
