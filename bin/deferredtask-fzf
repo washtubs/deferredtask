@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+action="$1"
+usage="deferredtask-fzf [do | dismiss]"
+if [ -z "$action" ]; then
+    echo $usage >&2
+    exit 1
+fi
+if [ "$action" = dismiss ]; then
+    verb="Dismiss"
+elif [ "$action" = do ]; then
+    verb="Do"
+else
+    echo $usage >&2
+    exit 1
+fi
+
+idx=$(deferredtask ls | fzf --prompt="[deferredtask] $verb> " --with-nth=2 -d"\t" | awk -F"\t" '{print $1}')
+if [ ! -z "$idx" ]; then
+    if [ "$action" = do ]; then
+        deferredtask do $idx
+    elif [ "$action" = dismiss ]; then
+        deferredtask dismiss $idx
+    fi
+fi

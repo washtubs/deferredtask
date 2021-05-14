@@ -4,21 +4,28 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 
-	"github.com/washtubs/assign2me"
+	"github.com/washtubs/deferredtask"
 )
 
 func main() {
-	svc := assign2me.GetDeferrableService()
-	flag.Parse()
-	action := flag.Arg(0)
+	svc := deferredtask.GetDeferrableService()
+	fs := flag.NewFlagSet("deferred-task", flag.ExitOnError)
+	fs.Parse(os.Args[1:])
+	//flag.Parse()
+	action := fs.Arg(0)
 	if action == "" {
 		log.Fatal("Must provide an action: do | add | ls | dismiss ")
 	}
+	actionArgs := fs.Args()[1:]
+	log.Printf("%+v", actionArgs)
 	if action == "do" {
-		usage := "assign2me do <idx>"
-		idStr := flag.Arg(1)
+		usage := "deferred-task do <idx>"
+		fs = flag.NewFlagSet("deferred-task", flag.ExitOnError)
+		fs.Parse(actionArgs)
+		idStr := fs.Arg(0)
 		if idStr == "" {
 			log.Fatal(usage)
 		}
@@ -33,15 +40,24 @@ func main() {
 		}
 
 	} else if action == "add" {
-		usage := "assign2me add <description> <cmd>"
-		description := flag.Arg(1)
-		cmd := flag.Arg(2)
+		fs = flag.NewFlagSet("deferred-task", flag.ExitOnError)
+		handle := ""
+		fs.StringVar(&handle, "handle", "", "Handle to use to update an existing value if it exists")
+		err := fs.Parse(actionArgs)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		usage := "deferred-task add <options> <description> <cmd>"
+		description := fs.Arg(0)
+		cmd := fs.Arg(1)
 		if cmd == "" || description == "" {
 			log.Fatal(usage)
 		}
-		err := svc.AddTask(assign2me.DeferrableTask{
+		err = svc.AddTask(deferredtask.DeferrableTask{
 			Description: description,
 			Cmd:         cmd,
+			Handle:      handle,
 		})
 		if err != nil {
 			log.Fatal(err)
@@ -53,11 +69,13 @@ func main() {
 			log.Fatal(err)
 		}
 		for idx, task := range tasks {
-			fmt.Printf("%d\t%s\t%s\n", idx, task.Description, task.Cmd)
+			fmt.Printf("%d\t%s\t%s\t%s\n", idx, task.Description, task.Cmd, task.Handle)
 		}
 	} else if action == "dismiss" {
-		usage := "assign2me dismiss <idx>"
-		idStr := flag.Arg(1)
+		fs = flag.NewFlagSet("deferred-task", flag.ExitOnError)
+		fs.Parse(actionArgs)
+		usage := "deferred-task dismiss <idx>"
+		idStr := fs.Arg(0)
 		if idStr == "" {
 			log.Fatal(usage)
 		}

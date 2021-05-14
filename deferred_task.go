@@ -1,4 +1,4 @@
-package snoozer
+package deferredtask
 
 import (
 	"encoding/json"
@@ -15,6 +15,7 @@ var defaultService = &deferrableTaskService{}
 type DeferrableTask struct {
 	Description string `json:description`
 	Cmd         string `json:cmd`
+	Handle      string `json:handle`
 }
 
 func DoTask(index int) error {
@@ -50,6 +51,10 @@ func (svc *deferrableTaskService) onNotExist() error {
 	f, err := os.Create(svc.getFileName())
 	if err != nil {
 		return errors.Wrapf(err, "Failed to initially create the file %s", fname)
+	}
+	_, err = f.WriteString("[]")
+	if err != nil {
+		return errors.Wrapf(err, "Failed write initial file contents %s", fname)
 	}
 	f.Close()
 	return nil
@@ -109,6 +114,16 @@ func (svc *deferrableTaskService) AddTask(task DeferrableTask) error {
 	tasks, err := svc.ListTasks()
 	if err != nil {
 		return err
+	}
+	if task.Handle != "" {
+		// Check for an existing task with the given handle
+		for _, t := range tasks {
+			if t.Handle == task.Handle {
+				// Update values
+				t = task
+				return svc.updateTasks(tasks)
+			}
+		}
 	}
 	return svc.updateTasks(append(tasks, task))
 }
