@@ -20,7 +20,6 @@ func main() {
 		log.Fatal("Must provide an action: do | add | ls | dismiss ")
 	}
 	actionArgs := fs.Args()[1:]
-	log.Printf("%+v", actionArgs)
 	if action == "do" {
 		usage := "deferred-task do <idx>"
 		fs = flag.NewFlagSet("deferred-task", flag.ExitOnError)
