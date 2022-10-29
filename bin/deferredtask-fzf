@@ -15,7 +15,7 @@ else
     exit 1
 fi
 
-ids=($(deferredtask ls | fzf-tmux --prompt="[deferredtask] $verb> " --with-nth=2 -d"\t" | awk -F"\t" '{print $1}'))
+ids=($(deferredtask ls | fzf-tmux -- --prompt="[deferredtask] $verb> " --with-nth=2 -d"\t" | awk -F"\t" '{print $1}'))
 for idx in ${ids[@]}; do
     if [ "$action" = do ]; then
         deferredtask do $idx
