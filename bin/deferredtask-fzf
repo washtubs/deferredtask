@@ -15,11 +15,11 @@ else
     exit 1
 fi
 
-idx=$(deferredtask ls | fzf --prompt="[deferredtask] $verb> " --with-nth=2 -d"\t" | awk -F"\t" '{print $1}')
-if [ ! -z "$idx" ]; then
+ids=($(deferredtask ls | fzf-tmux --prompt="[deferredtask] $verb> " --with-nth=2 -d"\t" | awk -F"\t" '{print $1}'))
+for idx in ${ids[@]}; do
     if [ "$action" = do ]; then
         deferredtask do $idx
     elif [ "$action" = dismiss ]; then
         deferredtask dismiss $idx
     fi
-fi
+done
